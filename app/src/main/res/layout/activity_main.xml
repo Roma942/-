@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <!-- Контейнер для GameView с рамкой -->
+    <FrameLayout
+        android:id="@+id/gameContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/border_background"
+        android:padding="8dp">
+
+        <!-- GameView внутри контейнера -->
+        <com.example.myapplication.GameView
+            android:id="@+id/gameView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </FrameLayout>
+
+    <!-- TextView для отображения таймера -->
+    <TextView
+        android:id="@+id/timerTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Время: 0 сек"
+        android:textSize="36sp"
+        android:layout_below="@id/gameContainer"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp" />
+
+    <!-- TextView для отображения количества мин -->
+    <TextView
+        android:id="@+id/minesTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Мины: 0"
+        android:textSize="36sp"
+        android:layout_below="@id/timerTextView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp" />
+
+    <!-- TextView для отображения сообщений "Победа" и "Поражение" -->
+    <TextView
+        android:id="@+id/resultTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="36sp"
+        android:layout_below="@id/minesTextView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:visibility="gone" /> <!-- По умолчанию скрыт -->
+
+    <!-- Кнопка "Рестарт" внизу экрана -->
+    <Button
+        android:id="@+id/restartButton"
+        android:layout_width="231dp"
+        android:layout_height="87dp"
+        android:layout_below="@id/resultTextView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="Рестарт"
+        android:textSize="36sp" />
+</RelativeLayout>
