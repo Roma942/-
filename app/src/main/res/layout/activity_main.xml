@@ -67,4 +67,15 @@
         android:layout_marginBottom="16dp"
         android:text="Рестарт"
         android:textSize="36sp" />
+
+    <Button
+        android:id="@+id/leaderboardButton"
+        android:layout_width="238dp"
+        android:layout_height="134dp"
+        android:layout_below="@id/restartButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="Таблица лидеров"
+        android:textSize="36sp" />
 </RelativeLayout>

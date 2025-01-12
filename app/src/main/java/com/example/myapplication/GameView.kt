@@ -1,18 +1,17 @@
 package com.example.myapplication
+
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 
-
-
-
 class GameView(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {
     private val paint = Paint()
     private var cellSize: Int = 0 // Размер клетки будет рассчитываться динамически
     private lateinit var gameBoard: GameBoard
 
+    // Callback-функции для уведомления о событиях игры
     var onGameOver: (() -> Unit)? = null
     var onGameWon: (() -> Unit)? = null
     var onMinesUpdated: ((minesLeft: Int) -> Unit)? = null
@@ -54,6 +53,13 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
 
     fun setGameBoard(gameBoard: GameBoard) {
         this.gameBoard = gameBoard
+        // Передаем callback-функции в GameBoard
+        gameBoard.onGameWon = {
+            onGameWon?.invoke()
+        }
+        gameBoard.onMinesUpdated = { minesLeft ->
+            onMinesUpdated?.invoke(minesLeft)
+        }
         requestLayout() // Пересчитываем размеры
     }
 
@@ -110,6 +116,10 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (gameBoard.isGameOver() || gameBoard.isGameWon()) {
+            return true // Блокируем взаимодействие, если игра завершена
+        }
+
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 val x = (event.x / cellSize).toInt()
@@ -119,7 +129,6 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
                     val cell = gameBoard.board[x][y]
                     if (!cell.isRevealed) {
                         gameBoard.toggleFlag(x, y)
-                        onMinesUpdated?.invoke(gameBoard.minesLeft) // Обновляем количество мин
                         invalidate()
                     }
                 }
@@ -131,7 +140,7 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
                 if (x in 0 until gameBoard.size && y in 0 until gameBoard.size) {
                     if (gameBoard.revealCell(x, y)) {
                         // Игра окончена (нажата мина)
-                        onGameOver?.invoke() // Вызываем событие поражения
+                        onGameOver?.invoke()
                         invalidate()
                     } else {
                         invalidate()

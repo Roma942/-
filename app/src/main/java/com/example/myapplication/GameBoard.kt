@@ -13,6 +13,12 @@ class GameBoard(val size: Int) {
     var minesLeft: Int = totalMines
         private set
 
+    // Callback для обновления количества мин
+    var onMinesUpdated: ((minesLeft: Int) -> Unit)? = null
+
+    // Callback для уведомления о победе
+    var onGameWon: (() -> Unit)? = null
+
     init {
         placeMines()
         calculateMinesAround()
@@ -54,18 +60,9 @@ class GameBoard(val size: Int) {
     fun revealCell(x: Int, y: Int): Boolean {
         if (gameOver || gameWon || board[x][y].isFlagged) return false
 
-        // Если это первый ход, гарантируем, что клетка не будет миной
-        if (isFirstMove) {
-            if (board[x][y].isMine) {
-                moveMine(x, y)
-                calculateMinesAround()
-            }
-            isFirstMove = false
-        }
-
         if (board[x][y].isMine) {
             gameOver = true
-            revealAllMines() // Открываем все мины
+            revealAllMines()
             return true
         }
 
@@ -83,10 +80,18 @@ class GameBoard(val size: Int) {
                 }
             }
 
-            checkWin()
+            checkWin() // Проверяем победу после открытия клетки
         }
 
         return false
+    }
+
+    fun toggleFlag(x: Int, y: Int) {
+        if (!gameOver && !gameWon && !board[x][y].isRevealed) {
+            board[x][y].isFlagged = !board[x][y].isFlagged
+            minesLeft += if (board[x][y].isFlagged) -1 else 1 // Обновляем количество мин
+            onMinesUpdated?.invoke(minesLeft) // Уведомляем об изменении количества мин
+        }
     }
 
     private fun moveMine(x: Int, y: Int) {
@@ -115,18 +120,12 @@ class GameBoard(val size: Int) {
         }
     }
 
-    fun toggleFlag(x: Int, y: Int) {
-        if (!board[x][y].isRevealed) {
-            board[x][y].isFlagged = !board[x][y].isFlagged
-            minesLeft += if (board[x][y].isFlagged) -1 else 1 // Обновляем количество мин
-        }
-    }
-
     private fun checkWin() {
         var allSafeCellsRevealed = true
 
         for (i in 0 until size) {
             for (j in 0 until size) {
+                // Проверяем только клетки, которые не являются минами
                 if (!board[i][j].isMine && !board[i][j].isRevealed) {
                     allSafeCellsRevealed = false
                     break
@@ -136,6 +135,7 @@ class GameBoard(val size: Int) {
 
         if (allSafeCellsRevealed) {
             gameWon = true
+            onGameWon?.invoke() // Уведомляем о победе
         }
     }
 

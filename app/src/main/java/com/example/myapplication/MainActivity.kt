@@ -1,20 +1,21 @@
 package com.example.myapplication
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import android.widget.Button
 import android.os.Handler
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import android.widget.EditText
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var gameView: GameView
     private lateinit var restartButton: Button
+    private lateinit var leaderboardButton: Button
     private lateinit var timerTextView: TextView
     private lateinit var minesTextView: TextView
     private lateinit var resultTextView: TextView
@@ -28,9 +29,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Инициализация GameView, кнопки и TextView
+        // Инициализация GameView, кнопок и TextView
         gameView = findViewById(R.id.gameView)
         restartButton = findViewById(R.id.restartButton)
+        leaderboardButton = findViewById(R.id.leaderboardButton)
         timerTextView = findViewById(R.id.timerTextView)
         minesTextView = findViewById(R.id.minesTextView)
         resultTextView = findViewById(R.id.resultTextView)
@@ -43,6 +45,12 @@ class MainActivity : AppCompatActivity() {
             restartGame()
         }
 
+        // Обработчик нажатия на кнопку "Таблица лидеров"
+        leaderboardButton.setOnClickListener {
+            val intent = Intent(this, LeaderboardActivity::class.java)
+            startActivity(intent)
+        }
+
         // Обработчики событий игры
         gameView.onGameOver = {
             stopTimer() // Останавливаем таймер
@@ -52,14 +60,45 @@ class MainActivity : AppCompatActivity() {
         }
         gameView.onGameWon = {
             stopTimer() // Останавливаем таймер
-            resultTextView.text = "Победа"
+            resultTextView.text = "Победа!"
             resultTextView.setTextColor(ContextCompat.getColor(this, android.R.color.holo_green_dark))
             resultTextView.visibility = View.VISIBLE // Показываем сообщение
+
+            // Показываем диалог для ввода имени
+            showNameInputDialog()
         }
         gameView.onMinesUpdated = { minesLeft ->
             // Обновляем TextView с количеством мин
             minesTextView.text = "Мины: $minesLeft"
         }
+    }
+
+    private fun showNameInputDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Победа!")
+        builder.setMessage("Введите ваше имя:")
+
+        val input = EditText(this)
+        builder.setView(input)
+
+        builder.setPositiveButton("Сохранить") { dialog, _ ->
+            val playerName = input.text.toString()
+            if (playerName.isNotEmpty()) {
+                saveLeaderboardEntry(playerName, elapsedTime.toInt())
+            }
+            dialog.dismiss()
+        }
+
+        builder.setNegativeButton("Отмена") { dialog, _ ->
+            dialog.cancel()
+        }
+
+        builder.show()
+    }
+
+    private fun saveLeaderboardEntry(playerName: String, score: Int) {
+        val dbHelper = LeaderboardDbHelper(this)
+        dbHelper.addEntry(playerName, score)
     }
 
     private fun restartGame() {
@@ -68,7 +107,7 @@ class MainActivity : AppCompatActivity() {
         resultTextView.visibility = View.GONE
 
         // Создаем новое игровое поле и передаем его в GameView
-        val gameBoard = GameBoard(10) // 10x10 поле, количество мин рассчитается автоматически
+        val gameBoard = GameBoard(5) // 10x10 поле, количество мин рассчитается автоматически
         gameView.setGameBoard(gameBoard)
         gameView.invalidate() // Перерисовываем GameView
 
